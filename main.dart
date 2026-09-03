@@ -10,181 +10,163 @@ class LocalzApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Localz',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF16A34A),
         ),
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          centerTitle: false,
-        ),
+        scaffoldBackgroundColor: const Color(0xFFF7F8F7),
       ),
-      home: const MainShell(),
+      home: const SplashScreen(),
     );
   }
 }
 
-class Product {
-  final String name;
-  final String unit;
-  final double price;
-  final String emoji;
+// ---------------- SPLASH SCREEN ----------------
 
-  const Product({
-    required this.name,
-    required this.unit,
-    required this.price,
-    required this.emoji,
-  });
-}
-
-const products = <Product>[
-  Product(
-    name: 'Fresh Bananas',
-    unit: '1 kg',
-    price: 49,
-    emoji: '🍌',
-  ),
-  Product(
-    name: 'Amul Taaza Milk',
-    unit: '1 L',
-    price: 62,
-    emoji: '🥛',
-  ),
-  Product(
-    name: 'Aashirvaad Atta',
-    unit: '5 kg',
-    price: 299,
-    emoji: '🌾',
-  ),
-  Product(
-    name: "Lay's Classic",
-    unit: '50 g',
-    price: 20,
-    emoji: '🥔',
-  ),
-  Product(
-    name: 'Tata Salt',
-    unit: '1 kg',
-    price: 28,
-    emoji: '🧂',
-  ),
-  Product(
-    name: 'Coca-Cola',
-    unit: '750 ml',
-    price: 45,
-    emoji: '🥤',
-  ),
-  Product(
-    name: 'Fresh Apples',
-    unit: '1 kg',
-    price: 129,
-    emoji: '🍎',
-  ),
-  Product(
-    name: 'Brown Bread',
-    unit: '400 g',
-    price: 45,
-    emoji: '🍞',
-  ),
-];
-
-class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  State<SplashScreen> createState() {
+    return _SplashScreenState();
+  }
 }
 
-class _MainShellState extends State<MainShell> {
-  int index = 0;
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
 
-  final Map<String, int> cart = <String, int>{};
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) {
+        return;
+      }
 
-  int get cartCount {
-    return cart.values.fold(
-      0,
-      (int total, int quantity) => total + quantity,
-    );
-  }
-
-  void add(Product product) {
-    setState(() {
-      cart[product.name] = (cart[product.name] ?? 0) + 1;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${product.name} added to cart'),
-        duration: const Duration(milliseconds: 800),
-      ),
-    );
-  }
-
-  void openCart() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => CartPage(
-          cart: cart,
-          onChanged: () {
-            setState(() {});
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return const MainScreen();
           },
         ),
-      ),
-    );
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = <Widget>[
-      HomePage(
-        onAdd: add,
-        onCart: openCart,
-      ),
-      ExplorePage(
-        onAdd: add,
-      ),
-      const OrdersPage(),
-      const AccountPage(),
-    ];
-
     return Scaffold(
-      body: pages[index],
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF16A34A),
+              Color(0xFF15803D),
+            ],
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: const Icon(
+                Icons.shopping_bag_rounded,
+                size: 65,
+                color: Color(0xFF16A34A),
+              ),
+            ),
+            const SizedBox(height: 25),
+            const Text(
+              'LOCALZ',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 38,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Your local. Delivered fast.',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------- MAIN SCREEN ----------------
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() {
+    return _MainScreenState();
+  }
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int selectedIndex = 0;
+
+  final List<Widget> pages = const [
+    HomePage(),
+    ExplorePage(),
+    CartPage(),
+    OrdersPage(),
+    AccountPage(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: pages[selectedIndex],
       bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (int value) {
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (int index) {
           setState(() {
-            index = value;
+            selectedIndex = index;
           });
         },
-        destinations: <NavigationDestination>[
-          const NavigationDestination(
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Home',
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.explore_outlined),
             selectedIcon: Icon(Icons.explore),
             label: 'Explore',
           ),
           NavigationDestination(
-            icon: Badge(
-              isLabelVisible: cartCount > 0,
-              label: Text('$cartCount'),
-              child: const Icon(Icons.receipt_long_outlined),
-            ),
-            selectedIcon: Badge(
-              isLabelVisible: cartCount > 0,
-              label: Text('$cartCount'),
-              child: const Icon(Icons.receipt_long),
-            ),
+            icon: Icon(Icons.shopping_cart_outlined),
+            selectedIcon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
             label: 'Orders',
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Account',
@@ -195,55 +177,121 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
-class HomePage extends StatelessWidget {
-  final void Function(Product) onAdd;
-  final VoidCallback onCart;
+// ---------------- HOME ----------------
 
-  const HomePage({
-    super.key,
-    required this.onAdd,
-    required this.onCart,
-  });
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  final List<Map<String, dynamic>> categories = const [
+    {
+      'name': 'Fruits',
+      'icon': Icons.apple,
+    },
+    {
+      'name': 'Dairy',
+      'icon': Icons.local_drink,
+    },
+    {
+      'name': 'Grocery',
+      'icon': Icons.shopping_basket,
+    },
+    {
+      'name': 'Snacks',
+      'icon': Icons.fastfood,
+    },
+    {
+      'name': 'Drinks',
+      'icon': Icons.local_cafe,
+    },
+    {
+      'name': 'Beauty',
+      'icon': Icons.face,
+    },
+  ];
+
+  final List<Map<String, dynamic>> products = const [
+    {
+      'name': 'Fresh Bananas',
+      'price': 45,
+      'oldPrice': 55,
+      'icon': Icons.eco,
+    },
+    {
+      'name': 'Amul Taaza Milk',
+      'price': 30,
+      'oldPrice': 34,
+      'icon': Icons.local_drink,
+    },
+    {
+      'name': 'Aashirvaad Atta',
+      'price': 280,
+      'oldPrice': 310,
+      'icon': Icons.grain,
+    },
+    {
+      'name': 'Lay’s Classic',
+      'price': 20,
+      'oldPrice': 25,
+      'icon': Icons.fastfood,
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: CustomScrollView(
-        slivers: <Widget>[
+        slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 16, 18, 10),
-              child: Row(
-                children: <Widget>[
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFF16A34A),
-                  ),
-                  const SizedBox(width: 6),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          'Deliver to',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: Color(0xFF16A34A),
+                      ),
+                      const SizedBox(width: 6),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Deliver to',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            Text(
+                              'Your Location',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          'Your location',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.notifications_none),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    onPressed: onCart,
-                    icon: const Icon(
-                      Icons.shopping_cart_outlined,
+                  const SizedBox(height: 12),
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search products...',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                 ],
@@ -251,135 +299,156 @@ class HomePage extends StatelessWidget {
             ),
           ),
 
+          // Banner
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search groceries, snacks and more',
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+            child: Container(
+              margin: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF16A34A),
+                    Color(0xFF22C55E),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'FAST DELIVERY',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Fresh groceries\nat your doorstep',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'Starting from ₹20',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const Icon(
+                    Icons.delivery_dining,
+                    color: Colors.white,
+                    size: 80,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Categories
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 18),
+              child: Text(
+                'Categories',
+                style: TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
 
           SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.all(18),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                color: const Color(0xFFE9F8EE),
-              ),
-              child: const Row(
-                children: <Widget>[
-                  Expanded(
+            child: SizedBox(
+              height: 115,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+
+                  return Container(
+                    width: 82,
+                    margin: const EdgeInsets.only(right: 12),
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: <Widget>[
+                      children: [
+                        Container(
+                          width: 65,
+                          height: 65,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Icon(
+                            category['icon'] as IconData,
+                            color: const Color(0xFF16A34A),
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(height: 7),
                         Text(
-                          'FAST DELIVERY',
-                          style: TextStyle(
+                          category['name'] as String,
+                          style: const TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Groceries at your door in minutes',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Fresh products from local stores.',
                         ),
                       ],
                     ),
-                  ),
-                  Text(
-                    '🛵',
-                    style: TextStyle(fontSize: 58),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),
 
+          // Popular products
           const SliverToBoxAdapter(
-            child: SectionTitle(
-              title: 'Categories',
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 105,
-              child: ListView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18),
-                scrollDirection: Axis.horizontal,
-                children: const <Widget>[
-                  CategoryTile(
-                    icon: '🥦',
-                    label: 'Fruits & Veg',
-                  ),
-                  CategoryTile(
-                    icon: '🥛',
-                    label: 'Dairy',
-                  ),
-                  CategoryTile(
-                    icon: '🍪',
-                    label: 'Snacks',
-                  ),
-                  CategoryTile(
-                    icon: '🧹',
-                    label: 'Home Care',
-                  ),
-                  CategoryTile(
-                    icon: '🧴',
-                    label: 'Personal Care',
-                  ),
-                ],
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(18, 8, 18, 12),
+              child: Text(
+                'Popular Products',
+                style: TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ),
-
-          const SliverToBoxAdapter(
-            child: SectionTitle(
-              title: 'Popular near you',
             ),
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              18,
-              0,
-              18,
-              24,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 18),
             sliver: SliverGrid(
               delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int i) {
+                (context, index) {
+                  final product = products[index];
+
                   return ProductCard(
-                    product: products[i],
-                    onAdd: () => onAdd(products[i]),
+                    name: product['name'] as String,
+                    price: product['price'] as int,
+                    oldPrice: product['oldPrice'] as int,
+                    icon: product['icon'] as IconData,
                   );
                 },
                 childCount: products.length,
               ),
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
@@ -387,511 +456,107 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
+
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 20),
+          ),
         ],
       ),
     );
   }
 }
 
-class SectionTitle extends StatelessWidget {
-  final String title;
+// ---------------- PRODUCT CARD ----------------
 
-  const SectionTitle({
+class ProductCard extends StatelessWidget {
+  final String name;
+  final int price;
+  final int oldPrice;
+  final IconData icon;
+
+  const ProductCard({
     super.key,
-    required this.title,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        18,
-        8,
-        18,
-        12,
-      ),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 19,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-}
-
-class CategoryTile extends StatelessWidget {
-  final String icon;
-  final String label;
-
-  const CategoryTile({
-    super.key,
+    required this.name,
+    required this.price,
+    required this.oldPrice,
     required this.icon,
-    required this.label,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 86,
-      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 8,
+            color: Color(0x11000000),
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
       child: Column(
-        children: <Widget>[
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              icon,
-              style: const TextStyle(fontSize: 30),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class ProductCard extends StatelessWidget {
-  final Product product;
-  final VoidCallback onAdd;
-
-  const ProductCard({
-    super.key,
-    required this.product,
-    required this.onAdd,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(
-          color: Colors.grey.shade200,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  product.emoji,
-                  style: const TextStyle(fontSize: 56),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Text(
-              product.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-
-            const SizedBox(height: 3),
-
-            Text(
-              product.unit,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 12,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    '₹${product.price.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                FilledButton(
-                  onPressed: onAdd,
-                  child: const Text('ADD'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ExplorePage extends StatelessWidget {
-  final void Function(Product) onAdd;
-
-  const ExplorePage({
-    super.key,
-    required this.onAdd,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(18),
-        children: <Widget>[
-          const Text(
-            'Explore',
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search products',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.grey.shade100,
-              border: OutlineInputBorder(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F8F3),
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+              ),
+              child: Icon(
+                icon,
+                size: 65,
+                color: const Color(0xFF16A34A),
               ),
             ),
           ),
-
-          const SizedBox(height: 18),
-
-          ...products.map(
-            (Product p) {
-              return ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 5),
-                leading: CircleAvatar(
-                  radius: 28,
-                  child: Text(
-                    p.emoji,
-                    style: const TextStyle(fontSize: 25),
-                  ),
-                ),
-                title: Text(
-                  p.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                subtitle: Text(p.unit),
-                trailing: FilledButton(
-                  onPressed: () => onAdd(p),
-                  child: const Text('ADD'),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CartPage extends StatefulWidget {
-  final Map<String, int> cart;
-  final VoidCallback onChanged;
-
-  const CartPage({
-    super.key,
-    required this.cart,
-    required this.onChanged,
-  });
-
-  @override
-  State<CartPage> createState() => _CartPageState();
-}
-
-class _CartPageState extends State<CartPage> {
-  double get total {
-    double sum = 0;
-
-    for (final MapEntry<String, int> entry
-        in widget.cart.entries) {
-      final Product product = products.firstWhere(
-        (Product p) => p.name == entry.key,
-      );
-
-      sum += product.price * entry.value;
-    }
-
-    return sum;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your Cart'),
-      ),
-      body: widget.cart.isEmpty
-          ? const Center(
-              child: Text('Your cart is empty'),
-            )
-          : Column(
-              children: <Widget>[
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(18),
-                    children: widget.cart.entries.map(
-                      (MapEntry<String, int> entry) {
-                        final Product p = products.firstWhere(
-                          (Product x) => x.name == entry.key,
-                        );
-
-                        return Card(
-                          child: ListTile(
-                            leading: Text(
-                              p.emoji,
-                              style:
-                                  const TextStyle(fontSize: 32),
-                            ),
-                            title: Text(p.name),
-                            subtitle: Text(
-                              '₹${p.price.toStringAsFixed(0)} × ${entry.value}',
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.remove_circle_outline,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  if ((widget.cart[p.name] ??
-                                          0) >
-                                      1) {
-                                    widget.cart[p.name] =
-                                        widget.cart[p.name]! - 1;
-                                  } else {
-                                    widget.cart.remove(p.name);
-                                  }
-                                });
-
-                                widget.onChanged();
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                    ).toList(),
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          const Text(
-                            'Total',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '₹${total.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute<void>(
-                                builder: (_) => CheckoutPage(
-                                  total: total,
-                                ),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            'Proceed to checkout',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-}
-
-class CheckoutPage extends StatelessWidget {
-  final double total;
-
-  const CheckoutPage({
-    super.key,
-    required this.total,
-  });
-
-  void placeOrder(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text(
-          'Order placed 🎉',
-        ),
-        content: Text(
-          'Your Localz order of ₹${total.toStringAsFixed(0)} has been placed.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.popUntil(
-                context,
-                (Route<dynamic> route) => route.isFirst,
-              );
-            },
-            child: const Text('Done'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Checkout'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(18),
-        children: <Widget>[
-          const Text(
-            'Delivery address',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-
           const SizedBox(height: 10),
-
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.location_on),
-              title: Text('Home'),
-              subtitle: Text(
-                'Add your delivery address',
-              ),
+          Text(
+            name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
             ),
           ),
-
-          const SizedBox(height: 20),
-
-          const Text(
-            'Payment',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-
-          const Card(
-            child: Column(
-              children: <Widget>[
-                ListTile(
-                  leading: Icon(Icons.money),
-                  title: Text('Cash on Delivery'),
-                  trailing: Icon(
-                    Icons.radio_button_checked,
-                  ),
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.account_balance_wallet_outlined,
-                  ),
-                  title: Text('Online payment'),
-                  trailing: Icon(
-                    Icons.radio_button_off,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
+          const SizedBox(height: 5),
           Row(
-            mainAxisAlignment:
-                MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              const Text(
-                'Total',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+            children: [
+              Text(
+                '₹$price',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
+              const SizedBox(width: 6),
               Text(
-                '₹${total.toStringAsFixed(0)}',
+                '₹$oldPrice',
                 style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
+                  color: Colors.grey,
+                  decoration: TextDecoration.lineThrough,
+                  fontSize: 12,
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 16),
-
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
-            child: FilledButton(
-              onPressed: () => placeOrder(context),
-              child: const Text('Place order'),
+            child: OutlinedButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('$name added to cart'),
+                  ),
+                );
+              },
+              child: const Text('ADD'),
             ),
           ),
         ],
@@ -899,6 +564,143 @@ class CheckoutPage extends StatelessWidget {
     );
   }
 }
+
+// ---------------- EXPLORE ----------------
+
+class ExplorePage extends StatelessWidget {
+  const ExplorePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(18),
+            child: Text(
+              'Explore',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search groceries, snacks, drinks...',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.search,
+                    size: 70,
+                    color: Color(0xFF16A34A),
+                  ),
+                  SizedBox(height: 15),
+                  Text(
+                    'Find anything you need',
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    'Search from local stores near you',
+                    style: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------- CART ----------------
+
+class CartPage extends StatelessWidget {
+  const CartPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(18),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'My Cart',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.shopping_cart_outlined,
+                    size: 85,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Your cart is empty',
+                    style: TextStyle(
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Add products to start shopping',
+                    style: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    onPressed: () {},
+                    child: const Text('Start Shopping'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------- ORDERS ----------------
 
 class OrdersPage extends StatelessWidget {
   const OrdersPage({super.key});
@@ -906,30 +708,45 @@ class OrdersPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(18),
-        children: <Widget>[
-          const Text(
-            'Orders',
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(18),
+            child: Text(
+              'My Orders',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
-
-          const SizedBox(height: 18),
-
-          Card(
-            child: ListTile(
-              leading: const CircleAvatar(
-                child: Icon(Icons.check),
-              ),
-              title: const Text('Sample order'),
-              subtitle: const Text(
-                'Delivered • ₹0',
-              ),
-              trailing: const Icon(
-                Icons.chevron_right,
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.receipt_long_outlined,
+                    size: 80,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'No orders yet',
+                    style: TextStyle(
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Your orders will appear here',
+                    style: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -938,6 +755,8 @@ class OrdersPage extends StatelessWidget {
     );
   }
 }
+
+// ---------------- ACCOUNT ----------------
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
@@ -947,78 +766,89 @@ class AccountPage extends StatelessWidget {
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(18),
-        children: <Widget>[
+        children: [
           const Text(
-            'Account',
+            'My Account',
             style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
             ),
           ),
-
-          const SizedBox(height: 18),
-
-          const CircleAvatar(
-            radius: 38,
-            child: Icon(
-              Icons.person,
-              size: 42,
+          const SizedBox(height: 25),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Row(
+              children: [
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: Color(0xFFE8F5E9),
+                  child: Icon(
+                    Icons.person,
+                    size: 35,
+                    color: Color(0xFF16A34A),
+                  ),
+                ),
+                SizedBox(width: 15),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome to Localz',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'Login to manage your account',
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-
-          const SizedBox(height: 10),
-
-          const Center(
-            child: Text(
-              'Welcome to Localz',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.location_on_outlined,
-              ),
-              title: const Text('Addresses'),
-              trailing: const Icon(
-                Icons.chevron_right,
-              ),
-              onTap: () {},
-            ),
-          ),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.favorite_border,
-              ),
-              title: const Text('Wishlist'),
-              trailing: const Icon(
-                Icons.chevron_right,
-              ),
-              onTap: () {},
-            ),
-          ),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.help_outline,
-              ),
-              title: const Text('Help & Support'),
-              trailing: const Icon(
-                Icons.chevron_right,
-              ),
-              onTap: () {},
-            ),
-          ),
+          const SizedBox(height: 15),
+          accountTile(Icons.location_on_outlined, 'My Addresses'),
+          accountTile(Icons.favorite_border, 'Wishlist'),
+          accountTile(Icons.payment_outlined, 'Payment Methods'),
+          accountTile(Icons.help_outline, 'Help & Support'),
+          accountTile(Icons.settings_outlined, 'Settings'),
         ],
+      ),
+    );
+  }
+
+  Widget accountTile(IconData icon, String title) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: const Color(0xFF16A34A),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: Colors.grey,
+        ),
+        onTap: () {},
       ),
     );
   }
